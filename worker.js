@@ -20,20 +20,23 @@ export default {
             if (!prompt) return json({ error: "Prompt is required" }, 400);
 
             // Choose model from the following list:
-            // "@cf/blackforestlabs/ux-1-schnell"
+            // "@cf/black-forest-labs/flux-1-schnell"
             // "@cf/bytedance/stable-diffusion-xl-lightning"
             // "@cf/lykon/dreamshaper-8-lcm"
             // "@cf/runwayml/stable-diffusion-v1-5-img2img"
             // "@cf/runwayml/stable-diffusion-v1-5-inpainting"
             // "@cf/stabilityai/stable-diffusion-xl-base-1.0"
+            // Note: FLUX returns { image: "<base64>" }; the SD models return raw bytes.
 
-            // 🧠 Generate image from prompt
+            // 🧠 Generate image from prompt (steps: max 8, default 4)
             const result = await env.AI.run(
-                "@cf/stabilityai/stable-diffusion-xl-base-1.0",
-                { prompt }
+                "@cf/black-forest-labs/flux-1-schnell",
+                { prompt, steps: 6 }
             );
 
-            return new Response(result, {
+            const bytes = Uint8Array.from(atob(result.image), (c) => c.charCodeAt(0));
+
+            return new Response(bytes, {
                 headers: { "Content-Type": "image/jpeg" },
             });
         } catch (err) {
